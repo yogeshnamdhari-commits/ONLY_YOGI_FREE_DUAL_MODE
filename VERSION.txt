@@ -1,1 +1,2 @@
-ONLY YOGI Free Dual-Mode Dashboard 1.0 — Port 8508
+ONLY YOGI Free Dual-Mode Dashboard 1.0 — master root app — Port 8508
+Optional separate release: Signal Engine v2.0.1 — releases/v2.0.1 — Port 8508
