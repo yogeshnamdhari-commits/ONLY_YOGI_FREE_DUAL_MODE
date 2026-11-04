@@ -1,0 +1,35 @@
+name: Signal Engine v2 release validation
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [feature/signal-engine-v2]
+  workflow_dispatch:
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct release ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat releases/v2.0.1/bundle.part*.b64 | base64 --decode > /tmp/ONLY_YOGI_SIGNAL_ENGINE_PORT_8508.zip
+          echo "5f2381e825c7c4886152ccd35852ebf8f5a119ed301099b96f0aefd08e8148ac  /tmp/ONLY_YOGI_SIGNAL_ENGINE_PORT_8508.zip" | sha256sum -c -
+          unzip -t /tmp/ONLY_YOGI_SIGNAL_ENGINE_PORT_8508.zip
+          mkdir -p /tmp/only-yogi-v2
+          unzip -q /tmp/ONLY_YOGI_SIGNAL_ENGINE_PORT_8508.zip -d /tmp/only-yogi-v2
+
+      - name: Install dependencies
+        run: python -m pip install -r /tmp/only-yogi-v2/requirements.txt
+
+      - name: Compile Python
+        run: python -m compileall -q /tmp/only-yogi-v2/app.py /tmp/only-yogi-v2/signal_engine.py /tmp/only-yogi-v2/tests
+
+      - name: Run unit tests
+        working-directory: /tmp/only-yogi-v2
+        run: python -m unittest discover -s tests -v
