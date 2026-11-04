@@ -1,8 +1,10 @@
-# ONLY YOGI — Free Dual-Mode Bitcoin Data Dashboard
+# ONLY YOGI — Bitcoin Data Dashboard (master)
 
-A local Streamlit companion for the existing TradingView ONLY YOGI indicator. It includes both requested modes.
+The default `master` branch currently contains the **Free Dual-Mode Bitcoin Data Dashboard 1.0**. The optional **Signal Engine v2.0.1** is distributed separately as a versioned ZIP bundle under `releases/v2.0.1/`.
 
-## Included modes
+This distinction is intentional: merge commit `4b4f5f41bf8031ae1334b42906f060b1f660f1d1` added the v2.0.1 release bundle and CI workflow, while preserving the original root `app.py`. The v2.0.1 signal engine is not the root dashboard entry point.
+
+## Current master dashboard — Dual-mode raw/tagged Bitcoin data
 
 ### Option B — Raw Blockchain (baseline)
 - Binance USDⓈ-M Futures BTCUSDT public ticker
@@ -12,7 +14,7 @@ A local Streamlit companion for the existing TradingView ONLY YOGI indicator. It
 - Recent unconfirmed transaction sample
 - Mining-pool block attribution over the trailing 24 hours
 
-No exchange/miner wallet labels are applied. Mining-pool attribution is not miner-wallet flow or proof of selling.
+No exchange/miner wallet labels are applied. Mining-pool block attribution is not miner-wallet flow or proof of selling.
 
 ### Option A — Tagged Wallets (partial labelled coverage)
 Upload a CSV with `entity`, `entity_type`, `address`; optional `source`, `confidence`.
@@ -23,24 +25,19 @@ This is only the addresses and transactions that you supply/receive. It is not a
 ### Free Daily On-Chain
 Manual BGeometrics free API calls for market cap, realized cap and active addresses. MVRV is derived only if market-cap and realized-cap observations have matching dates.
 
-The free-plan documentation lists 8 requests/hour and 15 requests/day and excludes exchange/miner aggregate flow endpoints. This dashboard makes only three manual daily calls; do not repeatedly refresh to bypass limits.
-
-## Important TradingView boundary
-
+## TradingView boundary
 Pine Script cannot call arbitrary REST APIs or localhost endpoints. This is a separate local Streamlit companion to view beside TradingView. It does not inject live API data into the Pine indicator.
 
-No BUY/SELL signal is generated. The existing ONLY YOGI signal remains disabled until feeds and methods are validated.
+The root dual-mode dashboard does not generate a validated BUY/SELL signal.
 
-## Install on macOS
+## Port and install — master dashboard
 
 **Configured local address:** `http://localhost:8508`  
-**Configured Streamlit port:** `8508`  
-
-1. Download and unzip `ONLY_YOGI_FREE_DUAL_MODE_PORT_8508.zip`.
-2. Open Terminal and change to the extracted folder. Alternatively, double-click `run_mac.command` to install dependencies and launch the app:
+**Configured Streamlit port:** `8508`
 
 ```bash
-cd ~/Downloads/ONLY_YOGI_FREE_DUAL_MODE
+git clone https://github.com/yogeshnamdhari-commits/ONLY_YOGI_FREE_DUAL_MODE.git
+cd ONLY_YOGI_FREE_DUAL_MODE
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
@@ -48,36 +45,31 @@ pip install -r requirements.txt
 streamlit run app.py --server.port 8508
 ```
 
-The included `.streamlit/config.toml` also sets port 8508 as the default. The launcher explicitly passes port 8508.  
-3. Open `http://localhost:8508`.
+Open `http://localhost:8508`.
 
-## Option A CSV example
+## Optional Signal Engine v2.0.1 release bundle
 
-Use the blank `watchlist_template.csv` as a starting point:
+This is a separate release package, not the root app on `master`.
+
+1. Clone or pull the repository's `master` branch.
+2. Reconstruct the v2.0.1 ZIP:
+
+```bash
+bash releases/v2.0.1/assemble_bundle.command
+```
+
+3. Follow [the v2.0.1 release README](releases/v2.0.1/README.md) to unzip it into a separate directory, install dependencies and run its included tests.
+4. The v2.0.1 app is separately launched on `http://localhost:8508`; stop the root dashboard first if it already occupies that port, or choose another unused port.
+
+Release archive SHA-256:
+`5f2381e825c7c4886152ccd35852ebf8f5a119ed301099b96f0aefd08e8148ac`
+
+**Signal limitations:** The v2.0.1 rules are provisional and not evidence of profitability. The package is read-only and does not place orders. Missing, stale, malformed or date-misaligned inputs should result in WAIT. The free raw blockchain feed does not establish total labelled exchange/miner flows.
+
+## Option A CSV format
 
 ```csv
 entity,entity_type,address,source,confidence
 ```
 
-Add real, documented public Bitcoin addresses. Example labels below are placeholders only:
-
-```csv
-Exchange Wallet A,exchange,REPLACE_WITH_REAL_BTC_ADDRESS,public_source_url,unverified
-Mining Wallet A,miner,REPLACE_WITH_REAL_BTC_ADDRESS,public_source_url,unverified
-```
-
-Do not use addresses unless you can verify their source and label. Never upload seed phrases, private keys, exchange credentials or API secrets.
-
-Option A is manual-refresh (not tick-by-tick). The Mempool.space address-history response is limited to up to 50 mempool transactions plus the first 25 confirmed transactions. Output is a sample of those returned transactions, not a guaranteed complete 24-hour window. Net balance change is tagged outputs minus tagged inputs. Internal transfers cancel in net only where both sides are present in the returned sample.
-
-## API behaviour and refresh
-- Raw network/market panel polls every 60 seconds (near-real-time, not tick-by-tick).
-- Tagged-wallet mode is manual-refresh to reduce public API load.
-- BGeometrics is manual-refresh and cached; three API calls per refresh.
-- Public API services can change, delay, rate-limit or fail (HTTP 429). Wait and retry later.
-
-## Data boundaries
-- Binance public Futures market-data endpoint does not require an API key.
-- Mempool.space REST endpoints are public but have usage limits.
-- BGeometrics free tier gives daily metrics only; exchange and miner aggregate flow endpoints are paid.
-- Option A labels are user-supplied and partial. Do not relabel these as total EX-IN / EX-OUT or MNR-IN / MNR-OUT.
+Use only real, documented public Bitcoin addresses. Never upload seed phrases, private keys, exchange credentials or API secrets.
